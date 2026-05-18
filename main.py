@@ -395,21 +395,105 @@ with tab3:
     with st.expander("Sieve Analysis Plot", expanded=False):
 
         if not plot_df.empty:
-            fig, ax = plt.subplots(figsize=(7, 4))
+            fig, ax = plt.subplots(figsize=(8, 5))
 
+            # Main PSD curve
             ax.plot(
                 plot_df["Sieve Opening (in)"],
                 plot_df["Cum % Retained"],
-                marker="o"
+                marker="o",
+                linewidth=2,
             )
 
+            # Log scale for particle size
             ax.set_xscale("log")
             ax.invert_xaxis()
-            ax.set_xlabel("Paticle Size Diameter (in)")
-            ax.set_ylabel("Cumulative Retained (%)")
-            ax.set_title("Particle Size Distribution")
-            ax.grid(True, which="both")
 
+            # Axis labels and title
+            ax.set_xlabel("Particle Size Diameter (in)")
+            ax.set_ylabel("Cumulative Retained (%)")
+            ax.set_title("Particle Size Distribution Curve")
+
+            # Y-axis limit
+            ax.set_ylim(0, 100)
+
+            # Grid lines
+            ax.grid(True, which="major", linestyle="-", linewidth=0.6, alpha=0.7)
+            ax.grid(True, which="minor", linestyle=":", linewidth=0.4, alpha=0.5)
+
+            # Clean reference lines: D10, D50, D90 only
+            d_markers = {
+                "D10": {
+                    "x": psd_summary.get("D10 (in)", np.nan),
+                    "y": 10
+                },
+                "D50": {
+                    "x": psd_summary.get("D50 (in)", np.nan),
+                    "y": 50
+                },
+                "D90": {
+                    "x": psd_summary.get("D90 (in)", np.nan),
+                    "y": 90
+                },
+            }
+
+            for label, values in d_markers.items():
+                x_val = values["x"]
+                y_val = values["y"]
+
+                if np.isfinite(x_val):
+                    # Vertical line at selected D-value
+                    ax.axvline(
+                        x=x_val,
+                        linestyle="--",
+                        linewidth=1,
+                        alpha=0.8
+                    )
+
+                    # Horizontal line at selected cumulative retained percentage
+                    ax.axhline(
+                        y=y_val,
+                        linestyle="--",
+                        linewidth=1,
+                        alpha=0.8
+                    )
+
+                    # Label near the intersection point
+                    ax.annotate(
+                        f"{label}\n{x_val:.5f} in",
+                        xy=(x_val, y_val),
+                        xytext=(8, 8),
+                        textcoords="offset points",
+                        fontsize=8,
+                        bbox=dict(
+                            boxstyle="round,pad=0.25",
+                            facecolor="white",
+                            alpha=0.85
+                        )
+                    )
+
+            # PSD summary box
+            textstr = (
+                f"UC = {psd_summary.get('UC (D40/D90)', np.nan):.2f}\n"
+                f"SC = {psd_summary.get('SC (D10/D95)', np.nan):.2f}\n"
+                f"Fines = {psd_summary.get('Fines (%)', np.nan):.2f}%"
+            )
+
+            ax.text(
+                0.03,
+                0.03,
+                textstr,
+                transform=ax.transAxes,
+                fontsize=9,
+                verticalalignment="bottom",
+                bbox=dict(
+                    boxstyle="round",
+                    facecolor="white",
+                    alpha=0.85
+                )
+            )
+
+            ax.legend(loc="upper right")
             st.pyplot(fig)
 
         else:
@@ -561,7 +645,7 @@ with tab7:
                 "Formation Factor",
                 "Cementation Exponent",
                 "Critical Rate",
-                "Formation Strength (G)"
+                "Shear Modulus (G)"
             ],
             "Value": [
                 f"{F_val:.3f}",
