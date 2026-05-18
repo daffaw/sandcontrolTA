@@ -193,7 +193,6 @@ with tab2:
         Nz = st.number_input("Nz (Perforation Density)", value=480.0, step=0.0001)
 
     with col2:
-        Gz = st.number_input("Gz (psi)", value=593.37)
         Bz = st.number_input("Bz (RB/STB)", value=1.1)
 
     with col3:
@@ -464,7 +463,7 @@ with tab6:
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        rate = st.number_input("Production Target (bopd)", value=178.0)
+        rate = st.number_input("Production Rate (bopd)", value=178.0)
 
     with col2:
         oil_price = st.number_input("Oil Price ($/bbl)", value=70.0)
@@ -524,8 +523,16 @@ with tab7:
         # FORMATION SUMMARY CALCULATION
         # =========================
         F_val, m, cementation_level = formation.calculate_cementation(phi, Ro, Rw)
-        Qz = formation.calculate_critical_rate(k, Nz, Gz, Bz, mu)
         strength = formation.calculate_formation_strength(Vclay, rho_b, dts)
+
+        if strength:
+            G = strength["Shear Modulus"]
+            G_Cb = strength["Formation Strength Index (G/Cb)"]
+        else:
+            G = 0
+            G_Cb = None
+
+        Qz = formation.calculate_critical_rate(k, Nz, G, Bz, mu)
 
         # =========================
         # SANDING SCREENING
@@ -540,37 +547,33 @@ with tab7:
         if not sanding_flag:
             st.warning(
                 f"No sanding risk detected → UC = {uc:.2f}, Fines = {fines:.2f}%, "
-                f"Production Target = {rate:.2f}, and Qz = {Qz:.2f}"
+                f"Production Target = {rate:.2f} BOPD, and Qz = {Qz:.2f} BOPD"
             )
             st.stop()
 
         st.success(
             f"Sanding risk detected → UC = {uc:.2f}, Fines = {fines:.2f}%, "
-            f"Production Target = {rate:.2f}, Qz = {Qz:.2f}"
+            f"Production Target = {rate:.2f} BOPD, Qz = {Qz:.2f} BOPD"
         )
-        if strength:
-            G_Cb = strength["Formation Strength Index (G/Cb)"]
-        else:
-            G_Cb = None
 
         df_summary = pd.DataFrame({
             "Variable": [
                 "Formation Factor",
                 "Cementation Exponent",
                 "Critical Rate",
-                "Formation Strength (G/Cb)"
+                "Formation Strength (G)"
             ],
             "Value": [
                 f"{F_val:.3f}",
                 f"{m:.3f}",
                 f"{Qz:.5f}",
-                f"{G_Cb:.2e}" if G_Cb else "N/A"
+                f"{G:.2e}" if G_Cb else "N/A"
             ],
             "Remark": [
                 "-",
                 cementation_level,
-                "Compare with production rate",
-                "Higher = Stronger Formation"
+                "BOPD",
+                "psi"
             ]
         })
 
