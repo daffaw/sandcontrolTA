@@ -158,13 +158,13 @@ with tab2:
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        phi = st.number_input("Porosity (Φ)", value=0.25)
+        phi = st.number_input("Porosity (Φ)", value=0.3410)
 
     with col2:
-        Ro = st.number_input("Ro (ohm-m)", value=10.0)
+        Ro = st.number_input("Ro (ohm-m)", value=0.2583)
 
     with col3:
-        Rw = st.number_input("Rw (ohm-m)", value=0.1)
+        Rw = st.number_input("Rw (ohm-m)", value=0.041)
 
     # =========================
     # FORMATION STRENGTH
@@ -532,6 +532,14 @@ with tab5:
     with col2:
         pressure = st.number_input("Pressure (psi)", value=708.0)
         temp = st.number_input("Temperature (°F)", value=180.0)
+    with col3:
+            rw_ft = st.number_input(
+                "Wellbore Radius, rw (ft)",
+                value=0.37,
+                min_value=0.01,
+                step=0.01,
+                format="%.3f"
+            )
 
 
  
@@ -547,13 +555,13 @@ with tab6:
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        rate = st.number_input("Production Rate (bopd)", value=178.0)
+        rate = st.number_input("Production Rate (bopd)", value=90.0)
 
     with col2:
-        oil_price = st.number_input("Oil Price ($/bbl)", value=70.0)
+        oil_price = st.number_input("Oil Price ($/bbl)", value=100.0)
 
     with col3:
-        opex = st.number_input("Operating Cost ($/year)", value=1000.0)
+        opex = st.number_input("Operating Cost ($/year)", value=550089)
 
     Qo_oil = rate
     st.markdown("---")
@@ -725,14 +733,20 @@ with tab7:
             length_perfo=depth_perf
         )
 
-        polymer = economics.cost_by_perfo_length(
-            method="Polymer Sand Consolidation",
-            length_perfo=depth_perf
+        polymer = economics.cost_polymer_consolidation(
+            length_perfo_ft=depth_perf,
+            porosity=phi,
+            rw_ft=rw_ft,
+            rt_ft=2.0,
+            excess_factor=1.0
         )
 
-        resin = economics.cost_by_perfo_length(
-            method="Resin Consolidation",
-            length_perfo=depth_perf
+        resin = economics.cost_resin_consolidation(
+            length_perfo_ft=depth_perf,
+            porosity=phi,
+            rw_ft=rw_ft,
+            rt_ft=3.0,
+            excess_factor=1.0
         )
 
         frac = economics.cost_by_perfo_length(
@@ -741,43 +755,67 @@ with tab7:
         )
 
         df_cost = pd.DataFrame([
-        {
-            "Method": gp["Method"],
-            "Length Perfo (ft)": gp["Length Perfo (ft)"],
-            "Cost per ft": gp["Cost per ft"],
-            "Total Cost": gp["Total Cost"]
-        },
-        {
-            "Method": sas["Method"],
-            "Length Perfo (ft)": sas["Length Perfo (ft)"],
-            "Cost per ft": sas["Cost per ft"],
-            "Total Cost": sas["Total Cost"]
-        },
-        {
-            "Method": polymer["Method"],
-            "Length Perfo (ft)": polymer["Length Perfo (ft)"],
-            "Cost per ft": polymer["Cost per ft"],
-            "Total Cost": polymer["Total Cost"]
-        },
-        {
-            "Method": resin["Method"],
-            "Length Perfo (ft)": resin["Length Perfo (ft)"],
-            "Cost per ft": resin["Cost per ft"],
-            "Total Cost": resin["Total Cost"]
-        },
-        {
-            "Method": wire["Method"],
-            "Length Perfo (ft)": wire["Length Perfo (ft)"],
-            "Cost per ft": wire["Cost per ft"],
-            "Total Cost": wire["Total Cost"]
-        },
-        {
-            "Method": frac["Method"],
-            "Length Perfo (ft)": frac["Length Perfo (ft)"],
-            "Cost per ft": frac["Cost per ft"],
-            "Total Cost": frac["Total Cost"]
-        }
-    ])
+            {
+                "Method": gp["Method"],
+                "Length Perfo (ft)": gp["Length Perfo (ft)"],
+                "Cost Model": "Fixed cost per ft",
+                "Cost per ft": gp["Cost per ft"],
+                "Chemical Volume (gal)": None,
+                "Chemical Volume per ft (gal/ft)": None,
+                "Volume Status": "-",
+                "Total Cost": gp["Total Cost"]
+            },
+            {
+                "Method": sas["Method"],
+                "Length Perfo (ft)": sas["Length Perfo (ft)"],
+                "Cost Model": "Fixed cost per ft",
+                "Cost per ft": sas["Cost per ft"],
+                "Chemical Volume (gal)": None,
+                "Chemical Volume per ft (gal/ft)": None,
+                "Volume Status": "-",
+                "Total Cost": sas["Total Cost"]
+            },
+            {
+                "Method": polymer["Method"],
+                "Length Perfo (ft)": polymer["Length Perfo (ft)"],
+                "Cost Model": "Chemical radial volume",
+                "Cost per ft": None,
+                "Chemical Volume (gal)": polymer["Chemical Volume (gal)"],
+                "Chemical Volume per ft (gal/ft)": polymer["Chemical Volume per ft (gal/ft)"],
+                "Volume Status": polymer["Volume Status"],
+                "Total Cost": polymer["Total Cost"]
+            },
+            {
+                "Method": resin["Method"],
+                "Length Perfo (ft)": resin["Length Perfo (ft)"],
+                "Cost Model": "Chemical radial volume",
+                "Cost per ft": None,
+                "Chemical Volume (gal)": resin["Chemical Volume (gal)"],
+                "Chemical Volume per ft (gal/ft)": resin["Chemical Volume per ft (gal/ft)"],
+                "Volume Status": resin["Volume Status"],
+                "Total Cost": resin["Total Cost"]
+            },
+            {
+                "Method": wire["Method"],
+                "Length Perfo (ft)": wire["Length Perfo (ft)"],
+                "Cost Model": "Fixed cost per ft",
+                "Cost per ft": wire["Cost per ft"],
+                "Chemical Volume (gal)": None,
+                "Chemical Volume per ft (gal/ft)": None,
+                "Volume Status": "-",
+                "Total Cost": wire["Total Cost"]
+            },
+            {
+                "Method": frac["Method"],
+                "Length Perfo (ft)": frac["Length Perfo (ft)"],
+                "Cost Model": "Fixed cost per ft",
+                "Cost per ft": frac["Cost per ft"],
+                "Chemical Volume (gal)": None,
+                "Chemical Volume per ft (gal/ft)": None,
+                "Volume Status": "-",
+                "Total Cost": frac["Total Cost"]
+            }
+        ])
 
         # =========================
         # PAYOUT PERIOD
@@ -804,13 +842,60 @@ with tab7:
   # =========================
         # DISPLAY TABLE WITHOUT COST BASIS
         # =========================
-        df_display = df_sorted[
+       # =========================
+        # CLEAN COST DISPLAY ONLY
+        # =========================
+
+        df_display = df_sorted.copy()
+
+
+        def format_cost_basis(row):
+            if row["Cost Model"] == "Chemical radial volume":
+                chem_vol = row.get("Chemical Volume (gal)", None)
+
+                if pd.isna(chem_vol):
+                    return "-"
+
+                return f"{chem_vol:,.2f} gal chemical"
+
+            cost_per_ft = row.get("Cost per ft", None)
+
+            if pd.isna(cost_per_ft):
+                return "-"
+
+            return f"${cost_per_ft:,.2f}/ft"
+
+
+        def format_payout_time(value):
+            if value is None or pd.isna(value):
+                return "-"
+
+            if value == float("inf"):
+                return "No payout"
+
+            return f"{value:.2f} years"
+
+
+        df_display["Length Perfo"] = df_display["Length Perfo (ft)"].apply(
+            lambda x: f"{x:.2f} ft"
+        )
+
+        df_display["Cost Basis"] = df_display.apply(format_cost_basis, axis=1)
+
+        df_display["Total Cost"] = df_display["Total Cost"].apply(
+            lambda x: f"${x:,.2f}"
+        )
+
+        df_display["Payout Time"] = df_display["Payout Time (year)"].apply(format_payout_time)
+
+        df_display = df_display[
             [
                 "Method",
-                "Length Perfo (ft)",
-                "Cost per ft",
+                "Length Perfo",
+                "Cost Model",
+                "Cost Basis",
                 "Total Cost",
-                "Payout Time (year)"
+                "Payout Time"
             ]
         ]
 
@@ -818,24 +903,7 @@ with tab7:
         st.dataframe(
             df_display,
             use_container_width=True,
-            column_config={
-                "Length Perfo (ft)": st.column_config.NumberColumn(
-                    "Length Perfo",
-                    format="%.2f ft"
-                ),
-                "Cost per ft": st.column_config.NumberColumn(
-                    "Cost per ft",
-                    format="$%,.2f"
-                ),
-                "Total Cost": st.column_config.NumberColumn(
-                    "Total Cost",
-                    format="$%,.2f"
-                ),
-                "Payout Time (year)": st.column_config.NumberColumn(
-                    "Payout Time",
-                    format="%.2f years"
-                )
-            }
+            hide_index=True
         )
         best = df_sorted.iloc[0]
         # ===== SAVE HISTORY =====

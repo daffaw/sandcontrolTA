@@ -1,7 +1,133 @@
 # =========================
 # ECONOMICS MODULE
+import math
+# =========================
+# =========================
+# CHEMICAL CONSOLIDATION COST
 # =========================
 
+def cost_chemical_consolidation(
+    method,
+    length_perfo_ft,
+    porosity,
+    rw_ft,
+    rt_ft,
+    excess_factor,
+    chemical_price_per_gal,
+    fixed_treatment_cost,
+    min_gal_per_ft,
+    max_gal_per_ft
+):
+    """
+    Chemical sand consolidation cost based on radial pore volume.
+
+    Total Cost = Fixed Treatment Cost + Chemical Volume × Chemical Price
+    Chemical Volume = pi × Lperf × porosity × (rt^2 - rw^2) × 7.4805 × EF
+    """
+
+    if length_perfo_ft < 0:
+        length_perfo_ft = 0.0
+
+    if porosity < 0:
+        porosity = 0.0
+
+    if rw_ft < 0:
+        rw_ft = 0.0
+
+    if rt_ft <= rw_ft:
+        rt_ft = rw_ft
+
+    if excess_factor <= 0:
+        excess_factor = 1.0
+
+    chemical_volume_gal = (
+        math.pi
+        * length_perfo_ft
+        * porosity
+        * (rt_ft**2 - rw_ft**2)
+        * 7.4805
+        * excess_factor
+    )
+
+    if length_perfo_ft > 0:
+        gal_per_ft = chemical_volume_gal / length_perfo_ft
+    else:
+        gal_per_ft = 0.0
+
+    material_cost = chemical_volume_gal * chemical_price_per_gal
+    total_cost = fixed_treatment_cost + material_cost
+
+    if gal_per_ft < min_gal_per_ft:
+        volume_status = "Below literature range"
+    elif gal_per_ft > max_gal_per_ft:
+        volume_status = "Above literature range"
+    else:
+        volume_status = "Within literature range"
+
+    return {
+        "Method": method,
+        "Length Perfo (ft)": length_perfo_ft,
+        "Porosity": porosity,
+        "rw (ft)": rw_ft,
+        "rt (ft)": rt_ft,
+        "Excess Factor": excess_factor,
+        "Chemical Volume (gal)": chemical_volume_gal,
+        "Chemical Volume (bbl)": chemical_volume_gal / 42.0,
+        "Chemical Volume per ft (gal/ft)": gal_per_ft,
+        "Literature Min (gal/ft)": min_gal_per_ft,
+        "Literature Max (gal/ft)": max_gal_per_ft,
+        "Volume Status": volume_status,
+        "Chemical Price (USD/gal)": chemical_price_per_gal,
+        "Material Cost": material_cost,
+        "Fixed Treatment Cost": fixed_treatment_cost,
+        "Total Cost": total_cost
+    }
+
+
+def cost_polymer_consolidation(
+    length_perfo_ft,
+    porosity,
+    rw_ft,
+    rt_ft=2.0,
+    excess_factor=1.0,
+    chemical_price_per_gal=33.5,
+    fixed_treatment_cost=6140.0
+):
+    return cost_chemical_consolidation(
+        method="Polymer Sand Consolidation",
+        length_perfo_ft=length_perfo_ft,
+        porosity=porosity,
+        rw_ft=rw_ft,
+        rt_ft=rt_ft,
+        excess_factor=excess_factor,
+        chemical_price_per_gal=chemical_price_per_gal,
+        fixed_treatment_cost=fixed_treatment_cost,
+        min_gal_per_ft=30.0,
+        max_gal_per_ft=50.0
+    )
+
+
+def cost_resin_consolidation(
+    length_perfo_ft,
+    porosity,
+    rw_ft,
+    rt_ft=3.0,
+    excess_factor=1.0,
+    chemical_price_per_gal=60.0,
+    fixed_treatment_cost=10000.0
+):
+    return cost_chemical_consolidation(
+        method="Resin Consolidation",
+        length_perfo_ft=length_perfo_ft,
+        porosity=porosity,
+        rw_ft=rw_ft,
+        rt_ft=rt_ft,
+        excess_factor=excess_factor,
+        chemical_price_per_gal=chemical_price_per_gal,
+        fixed_treatment_cost=fixed_treatment_cost,
+        min_gal_per_ft=50.0,
+        max_gal_per_ft=80.0
+    )
 # =========================
 # 1. GRAVEL PACK
 # =========================
