@@ -509,6 +509,7 @@ with tab4:
 
     with col1:
         completion = st.selectbox("Well Type", ["NEW", "OLD"])
+        well_type = st.selectbox("Well Type", ["Vertical", "Horizontal"])
         hole = st.selectbox("Hole Type", ["Cased Hole", "Open Hole"])
         inclination = st.number_input("Inclination (deg)", value=80.0)
 
@@ -682,11 +683,45 @@ with tab7:
         comp_remark = remark_completion(comp_res)
         chem_remark = remark_chemical(chem_res)
 
-        df = pd.DataFrame({
-            "Variable": ["Base on Clay Content", "Base on Sand Sieve Analysis", "Base on Completion & Production", "Chemical Sand Consolidation"],
-            "Recommendation": [clay_res, psd_res, comp_res, chem_res],
-            "Remark": ["-", psd_remark, comp_remark, chem_remark]
-        })
+        if well_type == "Horizontal":
+            df = pd.DataFrame({
+                "Variable": [
+                    "Base on Clay Content",
+                    "Base on Sand Sieve Analysis",
+                    "Base on Completion & Production"
+                ],
+                "Recommendation": [
+                    clay_res,
+                    psd_res,
+                    comp_res
+                ],
+                "Remark": [
+                    "-",
+                    psd_remark,
+                    comp_remark
+                ]
+            })
+        else:
+            df = pd.DataFrame({
+                "Variable": [
+                    "Base on Clay Content",
+                    "Base on Sand Sieve Analysis",
+                    "Base on Completion & Production",
+                    "Chemical Sand Consolidation"
+                ],
+                "Recommendation": [
+                    clay_res,
+                    psd_res,
+                    comp_res,
+                    chem_res
+                ],
+                "Remark": [
+                    "-",
+                    psd_remark,
+                    comp_remark,
+                    chem_remark
+                ]
+            })
 
         st.subheader("Sand Control Evaluation")
         st.dataframe(df, use_container_width=True)
@@ -694,12 +729,17 @@ with tab7:
         # =========================
         # RECOMMENDED METHODS
         # =========================
-        recommended_methods = [
-            psd_res,
-            comp_res,
-            chem_res
-        ]
-
+        if well_type == "Horizontal":
+            recommended_methods = [
+                psd_res,
+                comp_res
+            ]
+        else:
+            recommended_methods = [
+                psd_res,
+                comp_res,
+                chem_res
+            ]
         method_mapping = {
             "SAS Wire Wrapped": "SAS Wire-Wrap",
             "SAS Premium Mesh": "SAS Premium Mesh",
@@ -825,7 +865,8 @@ with tab7:
                 capex=cost,
                 Qo=Qo_oil,
                 price=oil_price,
-                opex=opex
+                opex=opex,
+                qz=Qz
             )
         )
 

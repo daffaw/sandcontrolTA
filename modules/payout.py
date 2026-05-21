@@ -1,4 +1,4 @@
-def payout_period(capex, Qo, price, opex):
+def payout_period(capex, Qo, price, opex,qz):
     """
     Calculate payout period (years)
     
@@ -11,9 +11,9 @@ def payout_period(capex, Qo, price, opex):
     Returns:
     float (years)
     """
-    
+    deltaq=max(Qo-qz,0)
     # Revenue per year
-    revenue = Qo * price * 365
+    revenue = deltaq * price * 365
     
     
     
