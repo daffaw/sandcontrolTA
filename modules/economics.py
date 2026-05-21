@@ -284,7 +284,7 @@ def compare_costs(gp, sas, polymer, resin):
     ]
 FIXED_COST_PER_FT = {
     "Gravel Pack": 53333.0,
-    "SAS Wire-Wrap": 20000.0,
+    "SAS Wire-Wrap": 238.9,
     "SAS Premium Mesh": 36000.0,
     "Polymer Sand Consolidation": 5283.91,
     "Resin Consolidation": 12974.54,
@@ -304,16 +304,41 @@ COST_BASIS = {
 
 def cost_by_perfo_length(method, length_perfo):
     """
-    Preliminary fixed cost-per-ft model for sand control economics.
+    Fixed cost model for sand control economics.
 
-    method       : sand control method name
-    length_perfo : perforation interval length, ft
+    SAS Premium Mesh uses 30-ft joint pricing.
+    Other methods still use normal cost-per-ft calculation.
     """
 
     if length_perfo < 0:
         length_perfo = 0
 
     cost_per_ft = FIXED_COST_PER_FT.get(method, 0.0)
+
+    
+    if method == "SAS Wire Wrapped":
+        joint_length_ft = 30.0
+        price_per_joint = cost_per_ft * joint_length_ft
+
+        if length_perfo == 0:
+            number_of_joints = 0
+        else:
+            number_of_joints = math.ceil(length_perfo / joint_length_ft)
+
+        total_cost = number_of_joints * price_per_joint
+
+        return {
+            "Method": method,
+            "Length Perfo (ft)": length_perfo,
+            "Cost per ft": cost_per_ft,
+            "Joint Length (ft)": joint_length_ft,
+            "Number of Joints": number_of_joints,
+            "Price per Joint": price_per_joint,
+            "Cost Basis": COST_BASIS.get(method, "Fixed screening assumption"),
+            "Total Cost": total_cost
+        }
+
+    # METHOD LAIN TETAP NORMAL
     total_cost = length_perfo * cost_per_ft
 
     return {

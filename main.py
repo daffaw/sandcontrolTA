@@ -679,9 +679,25 @@ with tab7:
         comp_res = evaluate_completion(rate, inclination)
         chem_res = evaluate_chemical(rate, clay, fines, completion, hole, cement, depth_perf, temp)
 
+        # =========================
+        # HIGH RATE OVERRIDE
+        # =========================
+        high_rate_cutoff = 7000
+        high_rate_override = rate > high_rate_cutoff
+
+        if high_rate_override:
+            psd_res = "Gravel Pack"
+            comp_res = "Gravel Pack"
+            chem_res = "Gravel Pack"
+
         psd_remark = remark_psd(psd_res)
         comp_remark = remark_completion(comp_res)
         chem_remark = remark_chemical(chem_res)
+
+        if high_rate_override:
+            psd_remark = "High production rate above 7000 bopd, screen-based selection is cut off"
+            comp_remark = "High production rate above 7000 bopd, Gravel Pack is selected"
+            chem_remark = "High production rate above 7000 bopd, chemical consolidation is cut off"
 
         if well_type == "Horizontal":
             df = pd.DataFrame({
@@ -741,18 +757,28 @@ with tab7:
                 chem_res
             ]
         method_mapping = {
-            "SAS Wire Wrapped": "SAS Wire-Wrap",
-            "SAS Premium Mesh": "SAS Premium Mesh",
-            "Gravel Pack": "Gravel Pack",
-            "Resin Sand Consolidation": "Resin Consolidation",
-            "Polymer Sand Consolidation": "Polymer Sand Consolidation",
-            "Frac Pack / Chemical Sand Control": "Frac Pack", 
+            "SAS Wire Wrapped": ["SAS Wire-Wrap"],
+            "SAS Premium Mesh": ["SAS Premium Mesh"],
+            "SAS Wire Wrapped / Premium Mesh": ["SAS Wire-Wrap", "SAS Premium Mesh"],
+            "Gravel Pack": ["Gravel Pack"],
+            "Gravel Pack / Expandable Sand Screen (ESS)": ["Gravel Pack"],
+            "Resin Sand Consolidation": ["Resin Consolidation"],
+            "Polymer Sand Consolidation": ["Polymer Sand Consolidation"],
+            "Frac Pack / Chemical Sand Control": ["Frac Pack", "Polymer Sand Consolidation", "Resin Consolidation"],
         }
-
         filtered_methods = []
+
         for m in recommended_methods:
             if m in method_mapping:
-                filtered_methods.append(method_mapping[m])
+                mapped = method_mapping[m]
+
+                if isinstance(mapped, list):
+                    filtered_methods.extend(mapped)
+                else:
+                    filtered_methods.append(mapped)
+
+        # remove duplicate while keeping order
+        filtered_methods = list(dict.fromkeys(filtered_methods))
 
        # =========================
        # =========================
