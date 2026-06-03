@@ -13,11 +13,8 @@ def payout_period(capex, Qo, price, opex, qz):
     float (years)
     """
 
-    # Avoided production loss due to sanding risk
-    avoided_loss = max(Qo - qz, 0)
-
     # Annual avoided revenue
-    revenue = avoided_loss * price * 365
+    revenue = Qo * price * 365
 
     # Net cash flow
     cashflow = revenue - opex
@@ -26,6 +23,6 @@ def payout_period(capex, Qo, price, opex, qz):
         return float('inf')  # not economically paid out
 
     # Payout period
-    payout = capex / cashflow
+    payout = (capex+opex) / cashflow
 
     return payout

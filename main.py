@@ -723,7 +723,7 @@ with tab7:
                     "Base on Clay Content",
                     "Base on Sand Sieve Analysis",
                     "Base on Completion & Production",
-                    "Chemical Sand Consolidation"
+                    "Base on Chemical Sand Consolidation"
                 ],
                 "Recommendation": [
                     clay_res,
