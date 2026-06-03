@@ -559,7 +559,7 @@ with tab6:
         rate = st.number_input("Production Rate (bopd)", value=90.0)
 
     with col2:
-        oil_price = st.number_input("Oil Price ($/bbl)", value=100.0)
+        oil_price = st.number_input("Oil Price ($/bbl)", value=70.0)
 
     with col3:
         opex = st.number_input("Operating Cost ($/year)", value=550089)
@@ -885,6 +885,21 @@ with tab7:
 
         # =========================
         # PAYOUT PERIOD
+        # =========================
+        # HORIZONTAL WELL COST MULTIPLIER
+        # =========================
+        horizontal_multiplier = 1.25
+
+        if well_type == "Horizontal":
+            df_cost["Installation Multiplier"] = horizontal_multiplier
+            df_cost["Total Cost"] = df_cost["Total Cost"] * horizontal_multiplier
+
+            # Update cost per ft only for methods that use cost per ft
+            df_cost["Cost per ft"] = df_cost["Cost per ft"].apply(
+                lambda x: x * horizontal_multiplier if pd.notna(x) else x
+            )
+        else:
+            df_cost["Installation Multiplier"] = 1.00
         # =========================
         df_cost["Payout Time (year)"] = df_cost["Total Cost"].apply(
             lambda cost: payout.payout_period(

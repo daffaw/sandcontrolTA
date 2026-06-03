@@ -283,9 +283,9 @@ def compare_costs(gp, sas, polymer, resin):
         {"Method": resin["Method"], "Total Cost": resin["Total Cost"]},
     ]
 FIXED_COST_PER_FT = {
-    "Gravel Pack": 53333.0,
+    "Gravel Pack": 25000,
     "SAS Wire-Wrap": 238.9,
-    "SAS Premium Mesh": 36000.0,
+    "SAS Premium Mesh": 350,
     "Polymer Sand Consolidation": 5283.91,
     "Resin Consolidation": 12974.54,
     "Frac Pack": 80000.0,
