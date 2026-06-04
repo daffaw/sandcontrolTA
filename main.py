@@ -51,21 +51,20 @@ def evaluate_clay(swelling):
         return "No Effected by Clay"
 
 
-def evaluate_psd(uc, fines):
+def evaluate_psd(uc, fines,sc):
     
-    if uc < 3 and fines <= 2:
+    if uc < 3 and fines <= 2 and sc<=10:
         return "SAS Wire Wrapped"
     
-    elif 3 <= uc <= 5 and fines <= 5:
+    elif 3 <= uc <= 5 and fines <= 5 and sc<=10:
         return "SAS Premium Mesh"
     
-    elif uc > 5 and 5 < fines < 10:
+    elif uc < 5 and 5 < fines < 10 and sc<=20:
         return "Gravel Pack"
     
-    elif uc > 5 and fines > 10:
-        return "Frac Pack / Chemical Sand Control"
-    else:
-        return "Gravel Pack"
+    elif uc > 5 and fines > 10 and sc>20:
+        return "Frac Pack"
+
 
 def evaluate_completion(rate, inclination):
     if rate < 7000 and inclination < 65:
@@ -442,33 +441,49 @@ with tab3:
                 y_val = values["y"]
 
                 if np.isfinite(x_val):
-                    # Vertical line at selected D-value
+                    # Vertical reference line
                     ax.axvline(
                         x=x_val,
                         linestyle="--",
                         linewidth=1,
-                        alpha=0.8
+                        alpha=0.7
                     )
 
-                    # Horizontal line at selected cumulative retained percentage
+                    # Horizontal reference line
                     ax.axhline(
                         y=y_val,
                         linestyle="--",
                         linewidth=1,
-                        alpha=0.8
+                        alpha=0.7
                     )
 
-                    # Label near the intersection point
+                    # Mark the exact D-value intersection point
+                    ax.scatter(
+                        x_val,
+                        y_val,
+                        s=70,
+                        zorder=5,
+                        edgecolor="black"
+                    )
+
+                    # Annotation with arrow pointing to the exact point
                     ax.annotate(
                         f"{label}\n{x_val:.5f} in",
                         xy=(x_val, y_val),
-                        xytext=(8, 8),
+                        xytext=(25, 15),
                         textcoords="offset points",
                         fontsize=8,
+                        ha="left",
+                        va="bottom",
+                        arrowprops=dict(
+                            arrowstyle="->",
+                            linewidth=1
+                        ),
                         bbox=dict(
                             boxstyle="round,pad=0.25",
                             facecolor="white",
-                            alpha=0.85
+                            edgecolor="black",
+                            alpha=0.9
                         )
                     )
 
@@ -675,7 +690,7 @@ with tab7:
 
         # TECH RESULT
         clay_res = evaluate_clay(swelling)
-        psd_res = evaluate_psd(uc, fines)
+        psd_res = evaluate_psd(uc, fines,sc)
         comp_res = evaluate_completion(rate, inclination)
         chem_res = evaluate_chemical(rate, clay, fines, completion, hole, cement, depth_perf, temp)
 
@@ -955,7 +970,8 @@ with tab7:
             if value == float("inf"):
                 return "No payout"
 
-            return f"{value:.2f} years"
+            days = value * 365
+            return f"{value:.2f} years ({days:.2f} days)"
 
 
         df_display["Length Perfo"] = df_display["Length Perfo (ft)"].apply(
