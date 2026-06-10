@@ -386,10 +386,22 @@ with tab3:
     # =========================
     # SIEVE ANALYSIS PLOT
     # =========================
-    plot_df = sieve_df[
-        sieve_df["Sieve Opening (in)"].notna()
-        & (sieve_df["Sieve Opening (in)"] > 0)
+    plot_df = sieve_df.copy()
+
+    plot_df["Opening for Plot (in)"] = plot_df["Sieve Opening (in)"]
+
+    is_pan = plot_df["Sieve Size"].astype(str).str.strip().str.lower() == "pan"
+
+    plot_df.loc[is_pan, "Opening for Plot (in)"] = 0.0010
+    plot_df.loc[is_pan, "Cum % Retained"] = 100.0
+
+    plot_df = plot_df[
+        plot_df["Opening for Plot (in)"].notna()
+        & (plot_df["Opening for Plot (in)"] > 0)
+        & plot_df["Cum % Retained"].notna()
     ].copy()
+
+    plot_df = plot_df.sort_values("Opening for Plot (in)", ascending=False)
 
     with st.expander("Sieve Analysis Plot", expanded=False):
 
@@ -398,11 +410,11 @@ with tab3:
 
             # Main PSD curve
             ax.plot(
-                plot_df["Sieve Opening (in)"],
-                plot_df["Cum % Retained"],
-                marker="o",
-                linewidth=2,
-            )
+            plot_df["Opening for Plot (in)"],
+            plot_df["Cum % Retained"],
+            marker="o",
+            linewidth=2,
+        )
 
             # Log scale for particle size
             ax.set_xscale("log")

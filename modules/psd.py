@@ -234,6 +234,7 @@ def calculate_sieve_analysis(raw_df):
         df = df.drop_duplicates(subset="Sieve Size", keep="last")
 
     df["Sieve Opening (in)"] = df["Sieve Size"].map(SIEVE_OPENING_IN)
+    df["Sieve Opening (micron)"] = df["Sieve Opening (in)"] * 25400
     df["Sand Weight (g)"] = pd.to_numeric(df["Sand Weight (g)"], errors="coerce").fillna(0.0)
 
     if (df["Sand Weight (g)"] < 0).any():
