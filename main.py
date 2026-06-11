@@ -539,6 +539,7 @@ with tab4:
         well_type = st.selectbox("Well Type", ["Vertical", "Horizontal"])
         hole = st.selectbox("Hole Type", ["Cased Hole", "Open Hole"])
         inclination = st.number_input("Inclination (deg)", value=80.0)
+        prod_rate=st.number_input("Production rate (bfpd)", value=5000)
 
     with col2:
         depth_perf = st.number_input("Length Perfo (ft)", value=25.0)
@@ -703,14 +704,14 @@ with tab7:
         # TECH RESULT
         clay_res = evaluate_clay(swelling)
         psd_res = evaluate_psd(uc, fines,sc)
-        comp_res = evaluate_completion(rate, inclination)
-        chem_res = evaluate_chemical(rate, clay, fines, completion, hole, cement, depth_perf, temp)
+        comp_res = evaluate_completion(prod_rate, inclination)
+        chem_res = evaluate_chemical(prod_rate, clay, fines, completion, hole, cement, depth_perf, temp)
 
         # =========================
         # HIGH RATE OVERRIDE
         # =========================
         high_rate_cutoff = 7000
-        high_rate_override = rate > high_rate_cutoff
+        high_rate_override = prod_rate > high_rate_cutoff
 
         if high_rate_override:
             psd_res = "Gravel Pack"
@@ -722,8 +723,8 @@ with tab7:
         chem_remark = remark_chemical(chem_res)
 
         if high_rate_override:
-            psd_remark = "High production rate above 7000 bopd, screen-based selection is cut off"
-            comp_remark = "High production rate above 7000 bopd, Gravel Pack is selected"
+            psd_remark = "High production rate above 7000 bfpd, screen-based selection is cut off"
+            comp_remark = "High production rate above 7000 bfpd, Gravel Pack is selected"
             chem_remark = "High production rate above 7000 bopd, chemical consolidation is cut off"
 
         if well_type == "Horizontal":
