@@ -88,7 +88,7 @@ def cost_polymer_consolidation(
     length_perfo_ft,
     porosity,
     rw_ft,
-    rt_ft=2.0,
+    rt_ft=10.0,
     excess_factor=1.0,
     chemical_price_per_gal=33.5,
     fixed_treatment_cost=6140.0
@@ -111,7 +111,7 @@ def cost_resin_consolidation(
     length_perfo_ft,
     porosity,
     rw_ft,
-    rt_ft=3.0,
+    rt_ft=10.0,
     excess_factor=1.0,
     chemical_price_per_gal=60.0,
     fixed_treatment_cost=10000.0

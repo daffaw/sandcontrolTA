@@ -180,7 +180,7 @@ with tab2:
         rho_b = st.number_input("Bulk Density (g/cc)", value=2.3)
 
     with col6:
-        dts = st.number_input("Δts (us/ft)", value=120.0)
+        dts = st.number_input("Δtc (us/ft)", value=120.0)
     
     #Critical Rate
     st.subheader("Critical Rate Calculation")
