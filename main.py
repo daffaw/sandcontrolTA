@@ -554,7 +554,7 @@ with tab5:
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        perm = st.number_input("Permeability (mD)", value=260.0)
+        perm = st.number_input("Permeability (mD)", value=7.59)
         clay = st.number_input("Clay Mineral (%)", value=2.0)
 
     with col2:
@@ -614,9 +614,9 @@ with tab6:
         hide_index=True,
         column_config={
             "Fixed Cost per ft ($/ft)": st.column_config.NumberColumn(
-                "Fixed Cost per ft ($/ft)",
-                format="$%,.2f"
-            )
+            "Fixed Cost per ft ($/ft)",
+            format="dollar"
+        )
         }
     )
 # =========================
