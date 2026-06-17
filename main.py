@@ -615,7 +615,7 @@ with tab6:
         column_config={
             "Fixed Cost per ft ($/ft)": st.column_config.NumberColumn(
             "Fixed Cost per ft ($/ft)",
-            format="dollar"
+            format="$%.2f"
         )
         }
     )
