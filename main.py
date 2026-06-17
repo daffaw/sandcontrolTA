@@ -132,7 +132,7 @@ with tab1:
     col1, col2 = st.columns(2)
 
     with col1:
-        well_name = st.text_input("Well Name", value="WIDH-10")
+        well_name = st.text_input("Well Name")
         fortion = st.text_input("Formation", value="TAF Sandstone")
 
 
