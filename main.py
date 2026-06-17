@@ -188,7 +188,6 @@ with tab2:
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        k = st.number_input("Permeability (k, mD)", value=7.590, step=0.0001)
         Nz = st.number_input("Nz (Perforation Density)", value=480.0, step=0.0001)
 
     with col2:
@@ -653,7 +652,7 @@ with tab7:
             G = 0
             G_Cb = None
 
-        Qz = formation.calculate_critical_rate(k, Nz, G, Bz, mu)
+        Qz = formation.calculate_critical_rate(perm, Nz, G, Bz, mu)
 
         # =========================
         # SANDING SCREENING
