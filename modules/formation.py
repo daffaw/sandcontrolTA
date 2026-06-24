@@ -45,16 +45,62 @@ def calculate_cementation(phi, Ro, Rw):
     return F, m, level
 
 #Critical Rate
-def calculate_critical_rate(k, Nz, Gz, Bz, mu):
+def calculate_critical_rate(k, Nz, Gz, Bo, Bw, mu_o, mu_w, water_cut):
     """
-    Simplified critical rate (Az = At)
+    Calculate critical sand-free liquid rate using mixed liquid properties.
+
+    Output:
+    Qz : float, BFPD
     """
 
-    if any(v <= 0 for v in [k, Nz, Gz, Bz, mu]):
+    # =========================
+    # INPUT VALIDATION
+    # =========================
+    if any(v <= 0 for v in [k, Nz, Gz, Bo, Bw, mu_o, mu_w]):
         return 0
 
     try:
-        Qz = 0.025e-6 * (k * Nz * Gz) / (Bz * mu)
+        # =========================
+        # WATER CUT FRACTION
+        # =========================
+        if water_cut < 0:
+            water_cut = 0
+
+        if water_cut > 100:
+            water_cut = 100
+
+        fw = water_cut / 100
+        fo = 1 - fw
+
+        # =========================
+        # MIXED LIQUID FVF
+        # Bliq = fo * Bo + fw * Bw
+        # =========================
+        Bliq = (fo * Bo) + (fw * Bw)
+
+        if Bliq <= 0:
+            return 0
+
+        # =========================
+        # RESERVOIR VOLUME FRACTION
+        # =========================
+        alpha_o = (fo * Bo) / Bliq
+        alpha_w = (fw * Bw) / Bliq
+
+        # =========================
+        # MIXED LIQUID VISCOSITY
+        # muliq = alpha_o * mu_o + alpha_w * mu_w
+        # =========================
+        muliq = (alpha_o * mu_o) + (alpha_w * mu_w)
+
+        if muliq <= 0:
+            return 0
+
+        # =========================
+        # CRITICAL RATE
+        # =========================
+        Qz = 0.025e-6 * (k * Nz * Gz) / (Bliq * muliq)
+
     except:
         return 0
 

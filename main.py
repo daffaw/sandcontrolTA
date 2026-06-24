@@ -21,23 +21,7 @@ st.title("Sand Control Selection Tool")
 # RULE-BASED ENGINE
 # =========================
 
-def is_sanding_risk(uc, fines, production_target, critical_rate):
-    """
-    Sanding risk screening based on PSD quality and critical rate.
-    Risk is triggered if one of these conditions occurs:
-    1. UC is lower than 3
-    2. Fines is higher than 5%
-    3. Production target is higher than critical rate Qz
-    """
-
-    if pd.isna(uc) or pd.isna(fines) or pd.isna(critical_rate):
-        return False
-
-    if uc < 3:
-        return True
-
-    if fines > 5:
-        return True
+def is_sanding_risk(production_target, critical_rate):
 
     if production_target > critical_rate:
         return True
@@ -181,20 +165,59 @@ with tab2:
 
     with col6:
         dts = st.number_input("Δtc (us/ft)", value=120.0)
+        
     
-    #Critical Rate
-    st.subheader("Critical Rate Calculation")
+    # =========================
+    # CRITICAL RATE
+    # =========================
+    st.subheader("Critical Rate Calculation - Liquid Basis")
 
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        Nz = st.number_input("Nz (Perforation Density)", value=480.0, step=0.0001)
+        Nz = st.number_input(
+            "Nz (Perforation Density)",
+            value=480.0,
+            step=0.0001
+        )
+
+        water_cut = st.number_input(
+            "Water Cut (%)",
+            value=64.0,
+            min_value=0.0,
+            max_value=100.0,
+            step=0.1
+        )
 
     with col2:
-        Bz = st.number_input("Bz (RB/STB)", value=1.1)
+        Bo = st.number_input(
+            "Oil FVF, Bo (RB/STB)",
+            value=1.10,
+            step=0.0001,
+            format="%.4f"
+        )
+
+        Bw = st.number_input(
+            "Water FVF, Bw (RB/STB)",
+            value=1.02,
+            step=0.0001,
+            format="%.4f"
+        )
 
     with col3:
-        mu = st.number_input("Viscosity (cp)", value=1.0)
+        mu_o = st.number_input(
+            "Oil Viscosity, μo (cp)",
+            value=1.00,
+            step=0.0001,
+            format="%.4f"
+        )
+
+        mu_w = st.number_input(
+            "Water Viscosity, μw (cp)",
+            value=0.50,
+            step=0.0001,
+            format="%.4f"
+        )
 
 
 # =========================
@@ -652,28 +675,34 @@ with tab7:
             G = 0
             G_Cb = None
 
-        Qz = formation.calculate_critical_rate(perm, Nz, G, Bz, mu)
+        Qz = formation.calculate_critical_rate(
+    k=perm,
+    Nz=Nz,
+    Gz=G,
+    Bo=Bo,
+    Bw=Bw,
+    mu_o=mu_o,
+    mu_w=mu_w,
+    water_cut=water_cut,
+)
 
         # =========================
         # SANDING SCREENING
         # =========================
-        sanding_flag = is_sanding_risk(
-            uc=uc,
-            fines=fines,
-            production_target=rate,
+        sanding_flag = is_sanding_risk(production_target=prod_rate,
             critical_rate=Qz
         )
 
         if not sanding_flag:
             st.warning(
-                f"No sanding risk detected → UC = {uc:.2f}, Fines = {fines:.2f}%, "
-                f"Production Target = {rate:.2f} BOPD, and Qz = {Qz:.2f} BOPD"
+                f"No sanding risk detected → , "
+                f"Production Target = {prod_rate:.2f} BFPD < Qz = {Qz:.2f} BFPD"
             )
             st.stop()
 
         st.success(
-            f"Sanding risk detected → UC = {uc:.2f}, Fines = {fines:.2f}%, "
-            f"Production Target = {rate:.2f} BOPD, Qz = {Qz:.2f} BOPD"
+           
+            f"Sanding Risk Detected →  Production Target = {prod_rate:.2f} BFPD > Qz = {Qz:.2f} BFPD"
         )
 
         df_summary = pd.DataFrame({
